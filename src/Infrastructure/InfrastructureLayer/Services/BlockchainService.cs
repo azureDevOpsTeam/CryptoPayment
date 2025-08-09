@@ -8,7 +8,7 @@ namespace Infrastructure.InfrastructureLayer.Services;
 public interface IBlockchainService
 {
     Task<decimal> GetUSDTBalanceAsync(string address, NetworkType network);
-    Task<decimal> GetBNBBalanceAsync(string address);
+    Task<decimal> GetBNBBalanceAsync(string address, NetworkType network);
     Task<string?> GetTransactionHashAsync(string address, decimal amount, NetworkType network, CurrencyType currency);
     Task<bool> VerifyTransactionAsync(string txHash, string address, decimal amount, NetworkType network);
 }
@@ -52,13 +52,21 @@ public class BlockchainService : IBlockchainService
         }
     }
 
-    public async Task<decimal> GetBNBBalanceAsync(string address)
+    public async Task<decimal> GetBNBBalanceAsync(string address, NetworkType network)
     {
         try
         {
-            var web3 = new Web3(_bscRpcUrl);
-            var balance = await web3.Eth.GetBalance.SendRequestAsync(address);
-            return (decimal)balance.Value / (decimal)Math.Pow(10, 18); // BNB has 18 decimals
+            if (network == NetworkType.BEP20)
+            {
+                var web3 = new Web3(_bscRpcUrl);
+                var balance = await web3.Eth.GetBalance.SendRequestAsync(address);
+                return (decimal)balance.Value / (decimal)Math.Pow(10, 18); // BNB has 18 decimals
+            }
+            else
+            {
+                // BNB is only supported on BEP20 network
+                return 0;
+            }
         }
         catch (Exception)
         {

@@ -47,7 +47,7 @@
             <option value="">شبکه مورد نظر را انتخاب کنید</option>
             @foreach (var option in Model.NetworkOptions)
             {
-                <option value="@option.Value">@option.Text</option>
+                <option value="@((int)option.Value)">@option.Text</option>
             }
         </select>
         <span asp-validation-for="Network" class="text-danger small"></span>
@@ -175,15 +175,26 @@
                      currencyText = 'USDT';
                      $('#Network option').prop('disabled', false);
                      $('#Network').prop('disabled', false).removeClass('locked-network');
+                     // Remove hidden input for USDT
+                     $('#hiddenNetwork').remove();
                  }
                  else if (selectedCurrency === 'BNB') {
                      currencyText = 'BNB';
-                     // پیدا کردن value گزینه BEP20
-                     let bep20Value = $('#Network option').filter(function () {
-                         return $(this).text().includes('BEP20');
-                     }).val();
-                     $('#Network').val(bep20Value);    // انتخاب BEP20
+                     // انتخاب BEP20 (مقدار 1)
+                     $('#Network').val('1');    // BEP20 = 1
                      $('#Network').prop('disabled', true); // غیرفعال کردن کامل
+                     // Add hidden input to ensure value is submitted when disabled
+                     if ($('#hiddenNetwork').length === 0) {
+                         $('<input>').attr({
+                             type: 'hidden',
+                             id: 'hiddenNetwork',
+                             name: 'Network',
+                             value: '1'
+                         }).appendTo('form');
+                     } else {
+                         $('#hiddenNetwork').val('1');
+                     }
+                     console.log('Network value set to BEP20 (1):', $('#Network').val());
                  }
 
                  if (selectedCurrency) {
@@ -194,13 +205,15 @@
                      $('#Amount').prop('disabled', true).val('').attr('placeholder', 'ابتدا نوع ارز را انتخاب کنید');
                      $('#Network option').prop('disabled', false);
                      $('#Network').prop('disabled', false).val('').removeClass('locked-network');
+                     // Remove hidden input when no currency selected
+                     $('#hiddenNetwork').remove();
                  }
              });
 
             // Form validation
             $('form').on('submit', function(e) {
                 let amount = parseFloat($('#Amount').val());
-                let network = $('#Network').val();
+                let network = $('#Network').val() || $('#hiddenNetwork').val();
                 
                 if (!amount || amount < 0.01 || amount > 1000000) {
                     e.preventDefault();

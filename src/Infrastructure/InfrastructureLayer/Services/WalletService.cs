@@ -4,6 +4,8 @@ using Infrastructure.InfrastructureLayer.Configuration;
 using Microsoft.Extensions.Options;
 using NBitcoin;
 using Nethereum.HdWallet;
+using Nethereum.Util;
+using System.Numerics;
 using System.Text;
 
 namespace Infrastructure.InfrastructureLayer.Services;
@@ -28,19 +30,28 @@ public class WalletService : IWalletService
 
     public async Task<Application.DomainLayer.Entities.Wallet> GenerateWalletAsync(NetworkType network)
     {
+
         var derivationIndex = await _walletRepository.GetNextDerivationIndexAsync(network);
         
         string address, privateKey, publicKey;
         
         if (network == NetworkType.BEP20)
         {
-            // Generate BEP20 (Ethereum-compatible) wallet
-            var ethereumWallet = new Nethereum.HdWallet.Wallet(_masterSeed, null);
-            var account = ethereumWallet.GetAccount(derivationIndex);
+            // Generate BEP20 (Binance Smart Chain) wallet using proper derivation path
+            var mnemonic = new Mnemonic(_masterSeed);
+            var masterKey = mnemonic.DeriveExtKey();
+            // Use BIP44 derivation path for Ethereum/BSC: m/44'/60'/0'/0/index
+            var derivedKey = masterKey.Derive(new KeyPath($"m/44'/60'/0'/0/{derivationIndex}"));
             
-            address = account.Address;
-            privateKey = account.PrivateKey;
-            publicKey = account.PublicKey;
+            privateKey = derivedKey.PrivateKey.ToHex();
+            publicKey = derivedKey.PrivateKey.PubKey.ToHex();
+            
+            // Convert to Ethereum/BSC address format using Keccak256
+            var pubKeyBytes = derivedKey.PrivateKey.PubKey.ToBytes();
+            var keccak = new Sha3Keccack();
+            var hash = keccak.CalculateHash(pubKeyBytes.Skip(1).ToArray());
+            var addressBytes = hash.Skip(12).ToArray();
+            address = "0x" + Convert.ToHexString(addressBytes).ToLower();
         }
         else // TRC20
         {
@@ -80,7 +91,7 @@ public class WalletService : IWalletService
         }
         else // BNB
         {
-            return await _blockchainService.GetBNBBalanceAsync(address);
+            return await _blockchainService.GetBNBBalanceAsync(address, network);
         }
     }
 
@@ -114,7 +125,31 @@ public static class Base58CheckEncoding
     
     public static string Encode(byte[] data)
     {
-        // Simplified Base58 encoding - use proper library in production
-        return Convert.ToBase64String(data).Replace("+", "").Replace("/", "").Replace("=", "");
+        // Add checksum
+        var hash1 = System.Security.Cryptography.SHA256.HashData(data);
+        var hash2 = System.Security.Cryptography.SHA256.HashData(hash1);
+        var dataWithChecksum = data.Concat(hash2.Take(4)).ToArray();
+        
+        // Convert to Base58
+        var result = "";
+        var value = new System.Numerics.BigInteger(dataWithChecksum.Reverse().Concat(new byte[] { 0 }).ToArray());
+        
+        while (value > 0)
+        {
+            var remainder = (int)(value % 58);
+            result = Alphabet[remainder] + result;
+            value /= 58;
+        }
+        
+        // Add leading zeros
+        foreach (var b in dataWithChecksum)
+        {
+            if (b == 0)
+                result = "1" + result;
+            else
+                break;
+        }
+        
+        return result;
     }
 }

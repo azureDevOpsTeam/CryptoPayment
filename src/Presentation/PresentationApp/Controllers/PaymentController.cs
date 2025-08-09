@@ -24,6 +24,8 @@ public class PaymentController : Controller
     [HttpPost]
     public async Task<IActionResult> Index(CreatePaymentViewModel model)
     {
+
+        
         if (!ModelState.IsValid)
         {
             return View(model);
