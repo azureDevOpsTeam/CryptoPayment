@@ -31,7 +31,13 @@ public class PaymentController : Controller
 
         try
         {
-            var result = await _paymentService.CreatePaymentAsync(model.Amount, model.Network);
+            if (!model.Currency.HasValue)
+            {
+                ModelState.AddModelError("Currency", "انتخاب نوع ارز الزامی است");
+                return View(model);
+            }
+            
+            var result = await _paymentService.CreatePaymentAsync(model.Amount, model.Network, model.Currency.Value);
             
             return RedirectToAction("Status", new { paymentId = result.PaymentId });
         }

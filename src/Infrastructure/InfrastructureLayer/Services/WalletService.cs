@@ -72,20 +72,27 @@ public class WalletService : IWalletService
         return walletEntity;
     }
 
-    public async Task<decimal> GetBalanceAsync(string address, NetworkType network)
+    public async Task<decimal> GetBalanceAsync(string address, NetworkType network, CurrencyType currency)
     {
-        return await _blockchainService.GetUSDTBalanceAsync(address, network);
+        if (currency == CurrencyType.USDT)
+        {
+            return await _blockchainService.GetUSDTBalanceAsync(address, network);
+        }
+        else // BNB
+        {
+            return await _blockchainService.GetBNBBalanceAsync(address);
+        }
     }
 
-    public async Task<bool> CheckTransactionAsync(string address, decimal expectedAmount, NetworkType network)
+    public async Task<bool> CheckTransactionAsync(string address, decimal expectedAmount, NetworkType network, CurrencyType currency)
     {
-        var balance = await GetBalanceAsync(address, network);
+        var balance = await GetBalanceAsync(address, network, currency);
         return balance >= expectedAmount;
     }
 
-    public async Task<string?> GetTransactionHashAsync(string address, decimal amount, NetworkType network)
+    public async Task<string?> GetTransactionHashAsync(string address, decimal amount, NetworkType network, CurrencyType currency)
     {
-        return await _blockchainService.GetTransactionHashAsync(address, amount, network);
+        return await _blockchainService.GetTransactionHashAsync(address, amount, network, currency);
     }
 
     private string ConvertToTronAddress(byte[] publicKeyBytes)

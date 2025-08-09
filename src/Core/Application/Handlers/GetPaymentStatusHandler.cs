@@ -31,6 +31,7 @@ public class GetPaymentStatusHandler : IRequestHandler<GetPaymentStatusQuery, Ge
             Amount = payment.Amount,
             ReceivedAmount = payment.ReceivedAmount,
             Network = payment.Network,
+            Currency = payment.Currency,
             Status = payment.Status,
             CreatedAt = payment.CreatedAt,
             ExpiresAt = payment.ExpiresAt,

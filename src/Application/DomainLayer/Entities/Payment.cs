@@ -16,6 +16,9 @@ public class Payment
     public NetworkType Network { get; set; }
     
     [Required]
+    public CurrencyType Currency { get; set; }
+    
+    [Required]
     public Guid WalletId { get; set; }
     
     [Required]

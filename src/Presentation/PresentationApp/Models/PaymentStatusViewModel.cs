@@ -9,6 +9,7 @@ public class PaymentStatusViewModel
     public decimal Amount { get; set; }
     public decimal? ReceivedAmount { get; set; }
     public NetworkType Network { get; set; }
+    public CurrencyType Currency { get; set; }
     public PaymentStatus Status { get; set; }
     public DateTime CreatedAt { get; set; }
     public DateTime ExpiresAt { get; set; }

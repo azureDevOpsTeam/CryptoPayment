@@ -7,7 +7,7 @@ namespace Core.ApplicationLayer.Services;
 
 public interface IPaymentService
 {
-    Task<CreatePaymentResponse> CreatePaymentAsync(decimal amount, NetworkType network);
+    Task<CreatePaymentResponse> CreatePaymentAsync(decimal amount, NetworkType network, CurrencyType currency);
     Task<GetPaymentStatusResponse> GetPaymentStatusAsync(Guid paymentId);
 }
 
@@ -20,12 +20,13 @@ public class PaymentService : IPaymentService
         _mediator = mediator;
     }
 
-    public async Task<CreatePaymentResponse> CreatePaymentAsync(decimal amount, NetworkType network)
+    public async Task<CreatePaymentResponse> CreatePaymentAsync(decimal amount, NetworkType network, CurrencyType currency)
     {
         var command = new CreatePaymentCommand
         {
             Amount = amount,
-            Network = network
+            Network = network,
+            Currency = currency
         };
 
         return await _mediator.Send(command);

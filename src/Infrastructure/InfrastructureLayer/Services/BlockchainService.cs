@@ -8,7 +8,8 @@ namespace Infrastructure.InfrastructureLayer.Services;
 public interface IBlockchainService
 {
     Task<decimal> GetUSDTBalanceAsync(string address, NetworkType network);
-    Task<string?> GetTransactionHashAsync(string address, decimal amount, NetworkType network);
+    Task<decimal> GetBNBBalanceAsync(string address);
+    Task<string?> GetTransactionHashAsync(string address, decimal amount, NetworkType network, CurrencyType currency);
     Task<bool> VerifyTransactionAsync(string txHash, string address, decimal amount, NetworkType network);
 }
 
@@ -38,7 +39,7 @@ public class BlockchainService : IBlockchainService
         {
             if (network == NetworkType.BEP20)
             {
-                return await GetBep20BalanceAsync(address);
+                return await GetBep20USDTBalanceAsync(address);
             }
             else // TRC20
             {
@@ -51,13 +52,34 @@ public class BlockchainService : IBlockchainService
         }
     }
 
-    public async Task<string?> GetTransactionHashAsync(string address, decimal amount, NetworkType network)
+    public async Task<decimal> GetBNBBalanceAsync(string address)
+    {
+        try
+        {
+            var web3 = new Web3(_bscRpcUrl);
+            var balance = await web3.Eth.GetBalance.SendRequestAsync(address);
+            return (decimal)balance.Value / (decimal)Math.Pow(10, 18); // BNB has 18 decimals
+        }
+        catch (Exception)
+        {
+            return 0;
+        }
+    }
+
+    public async Task<string?> GetTransactionHashAsync(string address, decimal amount, NetworkType network, CurrencyType currency)
     {
         try
         {
             if (network == NetworkType.BEP20)
             {
-                return await GetBep20TransactionHashAsync(address, amount);
+                if (currency == CurrencyType.USDT)
+                {
+                    return await GetBep20USDTTransactionHashAsync(address, amount);
+                }
+                else // BNB
+                {
+                    return await GetBep20BNBTransactionHashAsync(address, amount);
+                }
             }
             else // TRC20
             {
@@ -77,7 +99,7 @@ public class BlockchainService : IBlockchainService
         return false; // Placeholder
     }
 
-    private async Task<decimal> GetBep20BalanceAsync(string address)
+    private async Task<decimal> GetBep20USDTBalanceAsync(string address)
     {
         var web3 = new Web3(_bscRpcUrl);
         var contract = web3.Eth.GetContract(_erc20Abi, _usdtBep20Contract);
@@ -103,7 +125,7 @@ public class BlockchainService : IBlockchainService
         return 0; // Placeholder
     }
 
-    private async Task<string?> GetBep20TransactionHashAsync(string address, decimal amount)
+    private async Task<string?> GetBep20USDTTransactionHashAsync(string address, decimal amount)
     {
         var web3 = new Web3(_bscRpcUrl);
         
@@ -113,6 +135,19 @@ public class BlockchainService : IBlockchainService
         
         // This is a simplified implementation
         // In production, you would use event filters to find USDT transfers
+        return null; // Placeholder
+    }
+
+    private async Task<string?> GetBep20BNBTransactionHashAsync(string address, decimal amount)
+    {
+        var web3 = new Web3(_bscRpcUrl);
+        
+        // Get recent transactions for the address
+        var latestBlock = await web3.Eth.Blocks.GetBlockNumber.SendRequestAsync();
+        var fromBlock = latestBlock.Value - 100; // Check last 100 blocks
+        
+        // This is a simplified implementation
+        // In production, you would use event filters to find BNB transfers
         return null; // Placeholder
     }
 

@@ -5,10 +5,14 @@ namespace Presentation.PresentationApp.Models;
 
 public class CreatePaymentViewModel
 {
-    [Required(ErrorMessage = "مقدار USDT الزامی است")]
-    [Range(0.01, 1000000, ErrorMessage = "مقدار باید بین 0.01 تا 1,000,000 USDT باشد")]
-    [Display(Name = "مقدار USDT")]
+    [Required(ErrorMessage = "مقدار ارز الزامی است")]
+    [Range(0.01, 1000000, ErrorMessage = "مقدار باید بین 0.01 تا 1,000,000 باشد")]
+    [Display(Name = "مقدار")]
     public decimal Amount { get; set; }
+
+    [Required(ErrorMessage = "انتخاب نوع ارز الزامی است")]
+    [Display(Name = "نوع ارز")]
+    public CurrencyType? Currency { get; set; }
 
     [Required(ErrorMessage = "انتخاب شبکه الزامی است")]
     [Display(Name = "شبکه")]

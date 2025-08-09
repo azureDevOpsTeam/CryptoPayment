@@ -38,7 +38,7 @@ else
                 <div class="card-body">
                     <div class="row">
                         <div class="col-sm-6">
-                            <strong>مقدار:</strong> @Model.Amount.ToString("N8") USDT
+                            <strong>مقدار:</strong> @Model.Amount.ToString("N8") @Model.Currency
                         </div>
                         <div class="col-sm-6">
                             <strong>شبکه:</strong> 
@@ -51,7 +51,7 @@ else
                     {
                         <div class="row mt-2">
                             <div class="col-sm-6">
-                                <strong>مقدار دریافتی:</strong> @Model.ReceivedAmount.Value.ToString("N8") USDT
+                                <strong>مقدار دریافتی:</strong> @Model.ReceivedAmount.Value.ToString("N8") @Model.Currency
                             </div>
                             @if (!string.IsNullOrEmpty(Model.TransactionHash))
                             {
@@ -110,7 +110,7 @@ else
                     <h6><i class="bi bi-lightbulb me-2"></i>راهنمای پرداخت:</h6>
                     <ol class="mb-0">
                         <li>آدرس کیف پول بالا را کپی کنید</li>
-                        <li>به کیف پول خود بروید و @Model.Amount.ToString("N8") USDT را به این آدرس در شبکه @Model.NetworkDisplayName ارسال کنید</li>
+                        <li>به کیف پول خود بروید و @Model.Amount.ToString("N8") @Model.Currency را به این آدرس در شبکه @Model.NetworkDisplayName ارسال کنید</li>
                         <li>پس از ارسال، تراکنش به صورت خودکار بررسی خواهد شد</li>
                         <li>در صورت موفقیت، پیغام تأیید نمایش داده می‌شود</li>
                     </ol>

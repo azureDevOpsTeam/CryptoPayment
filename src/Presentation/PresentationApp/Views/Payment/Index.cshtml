@@ -26,20 +26,16 @@
     </div>
 
     <div class="mb-4">
-        <label asp-for="Amount" class="form-label">
-            <i class="bi bi-currency-dollar me-1"></i>
-            @Html.DisplayNameFor(m => m.Amount)
+        <label asp-for="Currency" class="form-label">
+            <i class="bi bi-coin me-1"></i>
+            نوع ارز
         </label>
-        <div class="input-group">
-            <input asp-for="Amount" class="form-control form-control-lg text-center" 
-                   placeholder="مثال: 100" step="0.01" min="0.01" max="1000000" />
-            <span class="input-group-text">USDT</span>
-        </div>
-        <span asp-validation-for="Amount" class="text-danger small"></span>
-        <div class="form-text">
-            <i class="bi bi-info-circle me-1"></i>
-            حداقل مقدار: 0.01 USDT - حداکثر مقدار: 1,000,000 USDT
-        </div>
+        <select asp-for="Currency" class="form-select form-select-lg mb-4" id="Currency">
+            <option value="">نوع ارز را انتخاب کنید</option>
+            <option value="USDT">USDT (Tether)</option>
+            <option value="BNB">BNB (Binance Coin)</option>
+        </select>
+        <span asp-validation-for="Currency" class="text-danger small"></span>
     </div>
 
     <div class="mb-4">
@@ -63,6 +59,23 @@
         </div>
     </div>
 
+    <div class="mb-4">
+        <label asp-for="Amount" class="form-label">
+            <i class="bi bi-currency-dollar me-1"></i>
+            @Html.DisplayNameFor(m => m.Amount)
+        </label>
+        <div class="input-group">
+            <input asp-for="Amount" class="form-control form-control-lg text-center" 
+                   placeholder="ابتدا نوع ارز را انتخاب کنید" step="0.01" min="0.01" max="1000000" disabled />
+            <span class="input-group-text currency-symbol">-</span>
+        </div>
+        <span asp-validation-for="Amount" class="text-danger small"></span>
+        <div class="form-text">
+            <i class="bi bi-info-circle me-1"></i>
+            حداقل مقدار: 0.01 - حداکثر مقدار: 1,000,000
+        </div>
+    </div>
+
     <div class="d-grid">
         <button type="submit" class="btn btn-primary btn-lg">
             <i class="bi bi-arrow-left-circle me-2"></i>
@@ -79,6 +92,60 @@
 </form>
 
 @section Scripts {
+    <style>
+        .network-selection .form-check-label {
+            padding: 8px 16px;
+            border: 2px solid #dee2e6;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .network-selection .form-check-input:checked + .form-check-label {
+            background-color: var(--bs-primary);
+            color: white;
+            border-color: var(--bs-primary);
+        }
+
+        .network-selection .form-check-input:disabled + .form-check-label {
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border-color: #dee2e6;
+            cursor: not-allowed;
+            opacity: 0.6;
+        }
+
+        .text-muted {
+            opacity: 0.6;
+        }
+
+        select:disabled {
+            background-color: #f8f9fa !important;
+            color: #6c757d !important;
+            cursor: not-allowed !important;
+            opacity: 0.8;
+        }
+
+        select option:disabled {
+            color: #6c757d !important;
+            background-color: #f8f9fa !important;
+        }
+
+        .locked-network {
+            background-color: #e9ecef !important;
+            border-color: #ced4da !important;
+            position: relative;
+        }
+
+        .locked-network:after {
+            content: "🔒";
+            position: absolute;
+            right: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+        }
+    </style>
     <script>
         $(document).ready(function() {
             // Format number input
@@ -91,13 +158,44 @@
                 }
             });
 
-            // Network selection styling
-            $('#Network').on('change', function() {
+            // Currency and Network selection styling
+            $('#Currency, #Network').on('change', function() {
                 let selectedValue = $(this).val();
                 if (selectedValue) {
                     $(this).removeClass('is-invalid');
                 }
             });
+
+            // Update currency symbol and enable/disable amount input
+             $('#Currency').on('change', function () {
+                 let selectedCurrency = $(this).val();
+                 let currencyText = '';
+
+                 if (selectedCurrency === 'USDT') {
+                     currencyText = 'USDT';
+                     $('#Network option').prop('disabled', false);
+                     $('#Network').prop('disabled', false).removeClass('locked-network');
+                 }
+                 else if (selectedCurrency === 'BNB') {
+                     currencyText = 'BNB';
+                     // پیدا کردن value گزینه BEP20
+                     let bep20Value = $('#Network option').filter(function () {
+                         return $(this).text().includes('BEP20');
+                     }).val();
+                     $('#Network').val(bep20Value);    // انتخاب BEP20
+                     $('#Network').prop('disabled', true); // غیرفعال کردن کامل
+                 }
+
+                 if (selectedCurrency) {
+                     $('.currency-symbol').text(currencyText);
+                     $('#Amount').prop('disabled', false).attr('placeholder', 'مثال: 100');
+                 } else {
+                     $('.currency-symbol').text('-');
+                     $('#Amount').prop('disabled', true).val('').attr('placeholder', 'ابتدا نوع ارز را انتخاب کنید');
+                     $('#Network option').prop('disabled', false);
+                     $('#Network').prop('disabled', false).val('').removeClass('locked-network');
+                 }
+             });
 
             // Form validation
             $('form').on('submit', function(e) {

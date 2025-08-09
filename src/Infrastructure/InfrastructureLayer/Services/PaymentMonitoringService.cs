@@ -67,7 +67,8 @@ public class PaymentMonitoringService : BackgroundService
                 var hasTransaction = await walletService.CheckTransactionAsync(
                     payment.Wallet.Address, 
                     payment.Amount, 
-                    payment.Network);
+                    payment.Network,
+                    payment.Currency);
 
                 if (hasTransaction)
                 {
@@ -75,11 +76,13 @@ public class PaymentMonitoringService : BackgroundService
                     var transactionHash = await walletService.GetTransactionHashAsync(
                         payment.Wallet.Address, 
                         payment.Amount, 
-                        payment.Network);
+                        payment.Network,
+                        payment.Currency);
 
                     var receivedAmount = await walletService.GetBalanceAsync(
                         payment.Wallet.Address, 
-                        payment.Network);
+                        payment.Network,
+                        payment.Currency);
 
                     // Update payment status
                     payment.Status = PaymentStatus.Completed;

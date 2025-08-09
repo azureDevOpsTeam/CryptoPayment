@@ -7,6 +7,7 @@ public class CreatePaymentCommand : IRequest<CreatePaymentResponse>
 {
     public decimal Amount { get; set; }
     public NetworkType Network { get; set; }
+    public CurrencyType Currency { get; set; }
 }
 
 public class CreatePaymentResponse

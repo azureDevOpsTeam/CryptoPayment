@@ -38,6 +38,7 @@ public class CreatePaymentHandler : IRequestHandler<CreatePaymentCommand, Create
             Id = Guid.NewGuid(),
             Amount = request.Amount,
             Network = request.Network,
+            Currency = request.Currency,
             WalletId = wallet.Id,
             Status = PaymentStatus.Pending,
             CreatedAt = DateTime.UtcNow,
